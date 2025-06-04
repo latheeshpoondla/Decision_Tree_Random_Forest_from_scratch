@@ -1,1 +1,1 @@
-# :evergreen_tree::evergreen_tree: Random Forest and Decision Tree :deciduous_tree: implementation from scratch
+# :deciduous_tree: Decision Tree and Random Forest :evergreen_tree::evergreen_tree: implementation from scratch
