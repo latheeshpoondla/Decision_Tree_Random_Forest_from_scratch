@@ -1,0 +1,7 @@
+Python Packages:
+numpy
+pandas
+jupyter
+scikit-learn  '''For model evaluation and metrics comparision'''
+matplotlib
+seaborn
