@@ -5,3 +5,4 @@ jupyter
 scikit-learn  '''For model evaluation and metrics comparision'''
 matplotlib
 seaborn
+collections
