@@ -18,4 +18,3 @@ The model is tested with titanic dataset and compared with sklearn's model.
 |Sklearn Decision Tree|79.33%|
 |Custom Random Forest| -- |
 |Sklearn Random Forest| -- |
-
