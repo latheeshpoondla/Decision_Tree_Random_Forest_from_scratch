@@ -60,9 +60,14 @@ class DecisionTreeClassifier(Classifier):
                 
                 w1, w2 = len(X_l), len(X_r)
                 gi_avg = self.weighted_average(gi_l, gi_r, w1, w2)
-                GIs[gi_avg[0] + gi_avg[1]] = (i, j, gi_l, gi_r)
-        
-        return GIs[min(GIs.keys())] if GIs else (None, None, None, None, None, None)
+                s = gi_avg[0] + gi_avg[1]
+                if s not in GIs:
+                    GIs[s] =[(i, j, gi_l, gi_r)]
+                else:
+                    GIs[s].append((i, j, gi_l, gi_r))
+                #This gi_avg sum is the Gini impurity for the split, which we want to minimize. 
+        l = GIs[min(GIs.keys())]
+        return l[np.random.choice(len(l), size=1)[0]] if GIs else (None, None, None, None, None, None)
     
     def __build_tree(self, X, y, root, depth=1):
         """
@@ -70,7 +75,7 @@ class DecisionTreeClassifier(Classifier):
         :param root: The current node in the tree.
         :param depth: Current depth of the tree.
         """
-        fi, thr, gi_l, gi_r, lc_l, lc_l = None, None, None, None, None, None
+        fi, thr, gi_l, gi_r, lc_l, lc_r = None, None, None, None, None, None
         if self.max_depth >= depth:
             fi, thr, gi_l, gi_r = self.__check_GI(X, y)
             root.feature_index = fi
