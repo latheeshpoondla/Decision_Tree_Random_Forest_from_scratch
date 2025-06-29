@@ -62,14 +62,14 @@ class DecisionTreeClassifier(Classifier):
                 gi_avg = self.weighted_average(gi_l, gi_r, w1, w2)
                 s = gi_avg[0] + gi_avg[1]
                 if s not in GIs:
-                    GIs[s] =[(i, j, gi_l, gi_r)]
+                    GIs[s] =[(i, j, gi_l, gi_r, s)]
                 else:
-                    GIs[s].append((i, j, gi_l, gi_r))
+                    GIs[s].append((i, j, gi_l, gi_r, s))
                 #This gi_avg sum is the Gini impurity for the split, which we want to minimize. 
         l = GIs[min(GIs.keys())]
-        return l[np.random.choice(len(l), size=1)[0]] if GIs else (None, None, None, None, None, None)
+        return l[np.random.choice(len(l), size=1)[0]] if GIs else (None, None, None, None, None)
     
-    def __build_tree(self, X, y, root, depth=1):
+    def __build_tree(self, X, y, root, gi=None, depth=1):
         """
         Recursively build the decision tree.
         :param root: The current node in the tree.
@@ -77,24 +77,24 @@ class DecisionTreeClassifier(Classifier):
         """
         fi, thr, gi_l, gi_r, lc_l, lc_r = None, None, None, None, None, None
         if self.max_depth >= depth:
-            fi, thr, gi_l, gi_r = self.__check_GI(X, y)
+            fi, thr, gi_l, gi_r, GI = self.__check_GI(X, y)
             root.feature_index = fi
             root.threshold = thr
             
         lc_l, lc_r = Counter(y[X[:, fi] <= thr]), Counter(y[X[:, fi] > thr])
         
-        if self.max_depth == depth:
+        if (self.max_depth == depth)or(gi and (gi-GI)<0.005):
             root.lvalue = lc_l.most_common(1)[0][0]
             root.rvalue = lc_r.most_common(1)[0][0]
         else:
             if gi_l != 0:
                 root.left = self.Tree()
-                self.__build_tree(X[X[:, fi] <= thr], y[X[:, fi] <= thr], root.left, depth + 1)
+                self.__build_tree(X[X[:, fi] <= thr], y[X[:, fi] <= thr], root.left, GI, depth + 1)
             else:
                 root.lvalue = lc_l.most_common(1)[0][0]
             if gi_r != 0:
                 root.right = self.Tree()
-                self.__build_tree(X[X[:, fi] > thr], y[X[:, fi] > thr], root.right, depth + 1)
+                self.__build_tree(X[X[:, fi] > thr], y[X[:, fi] > thr], root.right, GI, depth + 1)
             else:
                 root.rvalue = lc_r.most_common(1)[0][0]
             
