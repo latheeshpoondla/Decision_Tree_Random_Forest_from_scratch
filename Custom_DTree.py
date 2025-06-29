@@ -76,14 +76,14 @@ class DecisionTreeClassifier(Classifier):
         :param depth: Current depth of the tree.
         """
         fi, thr, gi_l, gi_r, lc_l, lc_r = None, None, None, None, None, None
-        if self.max_depth >= depth:
+        if self.max_depth==None or (self.max_depth >= depth):
             fi, thr, gi_l, gi_r, GI = self.__check_GI(X, y)
             root.feature_index = fi
             root.threshold = thr
-            
+        
         lc_l, lc_r = Counter(y[X[:, fi] <= thr]), Counter(y[X[:, fi] > thr])
         
-        if (self.max_depth == depth)or(gi and (gi-GI)<0.005):
+        if (self.max_depth and self.max_depth == depth)or(gi and (gi-GI)<0.01):
             root.lvalue = lc_l.most_common(1)[0][0]
             root.rvalue = lc_r.most_common(1)[0][0]
         else:
@@ -107,7 +107,7 @@ class DecisionTreeClassifier(Classifier):
             raise ValueError("X and y must have the same number of samples")
         self.root = self.Tree()
         self.__build_tree(X.to_numpy(), y.to_numpy(), root=self.root)
-    
+        
     def predict(self, X):
         y_pred = []
         if not isinstance(X, pd.DataFrame):
