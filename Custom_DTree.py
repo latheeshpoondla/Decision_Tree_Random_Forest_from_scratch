@@ -26,14 +26,14 @@ class DecisionTreeClassifier(Classifier):
                 gi_r = self.gini_impurity(y_r)
                 
                 w1, w2 = len(X_l), len(X_r)
-                gi_avg = self.weighted_average(gi_l, gi_r, w1, w2)
-                s = gi_avg[0] + gi_avg[1]
+                s = self.weighted_average(gi_l, gi_r, w1, w2)
                 if s not in GIs:
                     GIs[s] =[(selected_features[i], j, gi_l, gi_r, s)]
                 else:
                     GIs[s].append((selected_features[i], j, gi_l, gi_r, s))
                 #This gi_avg sum is the Gini impurity for the split, which we want to minimize. 
         l = GIs[min(GIs.keys())] if GIs else None
+        #Random tie breaking
         return l[np.random.choice(len(l), size=1)[0]] if l else (None, None, None, None, None)
     
     def __build_tree(self, X, y, root, gi=None, depth=1):
@@ -49,11 +49,13 @@ class DecisionTreeClassifier(Classifier):
             root.threshold = thr
         
         if GI is None:
-            return Counter(y).most_common(1)[0][0]
+            root.lvalue = Counter(y).most_common(1)[0][0]
+            root.rvalue = root.lvalue
+            return
         
         lc_l, lc_r = Counter(y[X[:, fi] <= thr]), Counter(y[X[:, fi] > thr])
         
-        if (self.max_depth and self.max_depth == depth)or(gi and (gi-GI)<0.01):
+        if (self.max_depth and self.max_depth == depth):
             root.lvalue = lc_l.most_common(1)[0][0]
             root.rvalue = lc_r.most_common(1)[0][0]
         else:
@@ -86,10 +88,7 @@ class DecisionTreeClassifier(Classifier):
         if len(X) != len(y):
             raise ValueError("X and y must have the same number of samples")
         self.root = self.Tree()
-        rt = self.__build_tree(X.to_numpy(), y.to_numpy(), root=self.root)
-        if rt:
-            self.root.lvalue = rt
-            self.root.rvalue = rt
+        self.__build_tree(X.to_numpy(), y.to_numpy(), root=self.root)
         
     def predict(self, X):
         y_pred = []
